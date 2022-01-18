@@ -19,7 +19,17 @@
                 <div class="card">
                     <div class="card-header">Pacientes</div>
                     <div class="card-body">
-                        .....
+                        <table class="table table-hover table-condensed" id="pacientes_table">
+                            <thead>
+                                <th>#</th>
+                                <th>Nome</th>
+                                <th>Data</th>
+                                <th>CPF</th>
+                                <th>Whatsapp</th>
+                                <th>Imagem</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -74,7 +84,7 @@
 
         toastr.options.preventDuplicates = true;
                 
-        $.ajaxSetup({
+        $.ajaxSetup({ //Referencia o token csrf de uma maneira global
             headers:{
                 'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content'),
             }
@@ -82,9 +92,8 @@
         
         $(function(){
             //Adicionar novo paciente
-
             $("#pacientes-cad-form").on("submit", function(e){
-                e.preventDefault();
+                e.preventDefault(); //Previne o comportamento padrão do botão submit de enviar o formulário
                 var form = this;                
                 $.ajax({
                     url:$(form).attr('action'),
@@ -95,24 +104,46 @@
                     contentType:false,
                     
                     //Inicio da Validação de campos
+
                     beforeSend:function(){
                         $(form).find('span.error-text').text('');
+                        //Localiza o campos span antes do formulário ser enviado
                     },
                     success:function(data){
-                        if(data.code == 0){
+                        if(data.code == 0){//Validação baseada no código de erro retornado pelo json do pacientesCad()
                             $.each(data.error, function(prefix, val){
-                                $(form).find('span.'+prefix+'_error').text(val[0]);
+                                $(form).find('span.'+prefix+'_error').text(val[0]); //Preenche o campo span de erro com o erro retornado pelo json
                             });
                         }else{
                             $(form)[0].reset();
-                            //alert('data.msg');
-                            toastr.success(data.msg);
+                            //alert('data.msg'); 
+                            $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
+                            toastr.success(data.msg); //Notificação de sucesso
                         }
                     //Fim da validação de campos
                     }
                 });
             })
-
+            //Fim Script Cadastro
+           
+            //Listar todos os pacientes
+            $('#pacientes_table').DataTable({
+                processing:true,
+                info:true,
+                ajax:"{{ route('get.pacientes.list') }}",
+                "pageLenght":5,
+                "aLengthMenu":[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
+                columns:[
+                    //{data:'id', name:'id'}, //Traz o id do banco de dados
+                    {data:'DT_RowIndex', name:'DT_RowIndex'},
+                    {data:'nome_paciente', name:'nome_paciente'},
+                    {data:'data_paciente', name:'data_paciente'},
+                    {data:'cpf_paciente', name:'cpf_paciente'},
+                    {data:'whatsapp_paciente', name:'whatsapp_paciente'},
+                    {data:'imagem_paciente', name:'imagem_paciente'},
+                ]
+            });
+            //Fim Script Listar
         });
     </script>
 </body>

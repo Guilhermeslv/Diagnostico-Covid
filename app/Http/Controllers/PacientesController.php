@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Paciente;
+use DataTables;
 
 class PacientesController extends Controller
 {
@@ -47,4 +48,14 @@ class PacientesController extends Controller
 
     }
 
+    //Listar todos os pacientes
+    public function getPacientesList(){
+        $pacientes = Paciente::all();
+        return DataTables::of($pacientes)
+                            ->addIndexColumn() //substitui o id para não bagunçar a contagem na tabela
+                            ->make(true);
+
+    }
+
+    //Fim listar
 }
