@@ -55,8 +55,8 @@ class PacientesController extends Controller
                             ->addIndexColumn() //substitui o id para não bagunçar a contagem na tabela
                             ->addColumn('actions', function($row){
                                   return '<div class="btn-group">
-                                                <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Update</button>
-                                                <button class="btn btn-sm btn-danger" id="deleteCountryBt">Delete</button>
+                                                <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Atualizar</button>
+                                                <button class="btn btn-sm btn-danger" data-id="'.$row->id.'" id="deletePacienteBtn">Apagar</button>
                                           </div>';
                               })
                             ->rawColumns(['actions'])
@@ -104,5 +104,14 @@ class PacientesController extends Controller
             }
         }        
         
+    }
+
+    public function pacienteDelete($id){
+        $query = Paciente::find($id)->delete();
+        if(!$query){
+            return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+        }else{
+            return response()->json(['code'=>1,'msg'=>'Paciente deletado!']);
+        }
     }
 }

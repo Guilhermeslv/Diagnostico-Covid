@@ -126,7 +126,6 @@
             });
            
             //Listar todos os pacientes
-
             $('#pacientes_table').DataTable({
                 processing:true,
                 info:true,
@@ -134,7 +133,7 @@
                 "pageLenght":5,
                 "aLengthMenu":[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
                 columns:[
-                    //{data:'id', name:'id'}, //Traz o id do banco de dados
+                    // {data:'id', name:'id'}, //Traz o id do banco de dados
                     {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
                     {data:'nome_paciente', name:'nome_paciente'},
                     // {data:'data_paciente', name:'data_paciente'},
@@ -145,9 +144,9 @@
                 ]
             });
 
-            //Script botão para abrir o modal de edição
+            //Script botão para abrir o modal de edição com as informações do paciente
             function editarPaciente(id){
-                    let paciente_id = id;
+                    var paciente_id = id;
                     let form = this;
                     let url_edit = "{{ route('paciente.detalhes', ':id') }}";
 
@@ -205,6 +204,45 @@
                 });
             });
 
+            //Botão de deletar
+            $(document).on('click', '#deletePacienteBtn', function () {
+                var paciente_id = $(this).data("id");
+                console.log(paciente_id);
+                var urlDelete = '{{ route("paciente.delete",":id") }}';
+                urlDelete = urlDelete.replace(':id', paciente_id);
+                // console.log(urlDelete);
+                
+                //Sweet Alert
+                Swal.fire({
+                    title: 'Você tem certeza?',
+                    text: "Gostaria de DELETAR esse paciente?",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sim, deletar!'
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({                    
+                            url: urlDelete,
+                            method:'get',
+                            dataType:'json',
+                            processData:false,
+                            contentType:false,
+                            success:function(data){
+                                //console.log(data);
+                                $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
+                                toastr.success(data.msg);
+                            },
+                            error:function(data){
+                                toastr.error(data.msg);
+                            },
+                        });
+
+                    }
+                    });
+                    //fim sweet alert 
+            });
     </script>
 </body>
 </html>
