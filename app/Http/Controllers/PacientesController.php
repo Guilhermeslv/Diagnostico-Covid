@@ -53,9 +53,21 @@ class PacientesController extends Controller
         $pacientes = Paciente::all();
         return DataTables::of($pacientes)
                             ->addIndexColumn() //substitui o id para não bagunçar a contagem na tabela
+                            ->addColumn('actions', function($row){
+                                  return '<div class="btn-group">
+                                                <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Update</button>
+                                                <button class="btn btn-sm btn-danger" id="deleteCountryBt">Delete</button>
+                                          </div>';
+                              })
+                            ->rawColumns(['actions'])
                             ->make(true);
 
     }
 
     //Fim listar
+
+    public function pacienteDetalhes($id){
+        $pacienteDetalhes = Paciente::find($id);
+        return response()->json($pacienteDetalhes);
+    }
 }

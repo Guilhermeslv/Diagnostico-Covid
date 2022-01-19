@@ -27,6 +27,7 @@
                                 <th>CPF</th>
                                 <th>Whatsapp</th>
                                 <th>Imagem</th>
+                                <th>Actions</th>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -72,7 +73,7 @@
             </div>
         </div>
     </div>
-
+    @include('edit-paciente')
     <script src="{{ asset('jquery/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.bundle.min.js') }}"></script>
@@ -124,9 +125,9 @@
                     }
                 });
             })
-            //Fim Script Cadastro
            
             //Listar todos os pacientes
+
             $('#pacientes_table').DataTable({
                 processing:true,
                 info:true,
@@ -141,10 +142,39 @@
                     {data:'cpf_paciente', name:'cpf_paciente'},
                     {data:'whatsapp_paciente', name:'whatsapp_paciente'},
                     {data:'imagem_paciente', name:'imagem_paciente'},
+                    {data:'actions', name:'actions'},
                 ]
             });
-            //Fim Script Listar
-        });
+            
+            //Script btn edit
+           
+        });//Final $(function
+        function editarPaciente(id){
+                //console.log(id);
+                var paciente_id = id;
+                //console.log(paciente_id);
+                let url_edit = "{{ route('paciente.detalhes', ':id') }}";
+                url_edit = url_edit.replace(':id', id);
+                $.ajax({
+                    url: url_edit,
+                    method:'GET',
+                    dataType:'json',
+                    contentType:false,
+                    success:function(details){
+                        console.log(details);
+                        $('.editPacientes').find('input[name="pacienteid"]').val(details.nome_paciente);
+                        $('.editPacientes').find('input[name="nome_paciente"]').val(details.nome_paciente);
+                        $('.editPacientes').find('input[name="data_paciente"]').val(details.data_paciente);
+                        $('.editPacientes').find('input[name="cpf_paciente"]').val(details.cpf_paciente);
+                        $('.editPacientes').find('input[name="whatsapp_paciente"]').val(details.whatsapp_paciente);
+                        $('.editPacientes').find('input[name="imagem_paciente"]').val(details.imagem_paciente);
+                        $('.editPacientes').modal('show');
+                    },
+                    error:function(details){
+                        console.log(details);
+                    },
+            });
+            }
     </script>
 </body>
 </html>

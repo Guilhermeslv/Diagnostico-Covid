@@ -20,3 +20,4 @@ Route::get('/', function () {
 Route::get('/pacientes-list',[PacientesController::class, 'index'])->name('pacientes.list');
 Route::post('/pacientes-cad',[PacientesController::class, 'pacientesCad'])->name('pacientes.cad');
 Route::get('/getPacientesList',[PacientesController::class, 'getPacientesList'])->name('get.pacientes.list');
+Route::get('/pacienteDetalhes/{id}',[PacientesController::class, 'pacienteDetalhes'])->name('paciente.detalhes');
