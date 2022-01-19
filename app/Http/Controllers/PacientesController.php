@@ -70,4 +70,39 @@ class PacientesController extends Controller
         $pacienteDetalhes = Paciente::find($id);
         return response()->json($pacienteDetalhes);
     }
+
+    public function pacienteAtt(Request $request){
+        //$pacienteAtt = new Paciente();
+        //$pacienteAtt->find($request->pacienteid)->update($request->all());
+        //return response()->json(['code'=>1,'msg'=>'Dados do paciente foram atualizados!']);
+        
+        $paciente_id = $request->pacienteid; //Requisita o id do campo hidden do modal
+
+        $validator = \Validator::make($request->all(),[
+            'nome_paciente'=>'required',
+            'data_paciente'=>'required',
+            'cpf_paciente'=>'required',
+            'whatsapp_paciente'=>'required',
+            'imagem_paciente'=>'required',     
+        ]);
+
+        if(!$validator->passes()){
+            return response()->json(['code'=>0,'error'=>$validator->errors()->toArray()]);// Json retornado para o Javascript
+        }else{
+            $pacienteAtt = Paciente::find($paciente_id);
+            $pacienteAtt->nome_paciente = $request->nome_paciente;
+            $pacienteAtt->data_paciente = $request->data_paciente;
+            $pacienteAtt->cpf_paciente = $request->cpf_paciente;
+            $pacienteAtt->whatsapp_paciente = $request->whatsapp_paciente;
+            $pacienteAtt->imagem_paciente = $request->imagem_paciente;
+            $query = $pacienteAtt->save();
+
+            if(!$query){
+                return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+            }else{
+                return response()->json(['code'=>1,'msg'=>'Dados do paciente atualizados!']);
+            }
+        }        
+        
+    }
 }

@@ -7,38 +7,44 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-
-            <form action="">
-                <input type="hidden" name="pacienteid">
-                
+        <form action="{{ route('paciente.att'); }}" method="post"  id="att-paciente">
+          @csrf
+        <div class="modal-body">            
+                <input type="hidden" name="pacienteid">                
                 <div class="form-group">
                     <label for="">Nome do Paciente</label>
                     <input type="text" class="form-control" name="nome_paciente" placeholder="Digite o nome do paciente">
+                    <span class="text-danger error-text nome_paciente_error"></span>
                 </div>
                 <div class="form-group">    
                     <label for="">Data de nascimento</label>
                     <input type="text" class="form-control" name="data_paciente" placeholder="Digite a data de nascimento do paciente">
-                </div>
+                    <span class="text-danger error-text data_paciente_error"></span>
+                  </div>
                 <div class="form-group">    
                     <label for="">CPF do Paciente</label>
                     <input type="text" class="form-control" name="cpf_paciente" placeholder="Digite o CPF do paciente">
-                </div>
+                    <span class="text-danger error-text cpf_paciente_error"></span>
+                  </div>
                 <div class="form-group">    
                     <label for="">Whatsapp</label>
                     <input type="text" class="form-control" name="whatsapp_paciente" placeholder="Digite o whatsapp do paciente">
-                </div>
+                    <span class="text-danger error-text whatsapp_paciente_error"></span>
+                  </div>
                 <div class="form-group">    
                     <label for="">Imagem</label>
                     <input type="text" class="form-control" name="imagem_paciente" placeholder="Insira uma imagem do paciente">
-                </div>
-            </form>
-
+                    <span class="text-danger error-text imagem_paciente_error"></span>
+                  </div>            
+                  
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary">Save changes</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <div class="modal-footer">  
+          <div class="form-group">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">fechar</button>
+            <button type="submit" class="btn btn-primary">Salvar alterações</button>
+          </div>   
         </div>
+      </form>
       </div>
     </div>
   </div>

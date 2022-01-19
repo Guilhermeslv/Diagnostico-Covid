@@ -23,11 +23,11 @@
                             <thead>
                                 <th>#</th>
                                 <th>Nome</th>
-                                <th>Data</th>
+                                {{-- <th>Data</th>
                                 <th>CPF</th>
-                                <th>Whatsapp</th>
+                                <th>Whatsapp</th> --}}
                                 <th>Imagem</th>
-                                <th>Actions</th>
+                                <th>Ações</th>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -90,8 +90,7 @@
                 'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content'),
             }
         });
-        
-        $(function(){
+
             //Adicionar novo paciente
             $("#pacientes-cad-form").on("submit", function(e){
                 e.preventDefault(); //Previne o comportamento padrão do botão submit de enviar o formulário
@@ -112,8 +111,8 @@
                     },
                     success:function(data){
                         if(data.code == 0){//Validação baseada no código de erro retornado pelo json do pacientesCad()
-                            $.each(data.error, function(prefix, val){
-                                $(form).find('span.'+prefix+'_error').text(val[0]); //Preenche o campo span de erro com o erro retornado pelo json
+                            $.each(data.error, function(prefix, val){ //Para cada campo vazio a função mostra o span de erro
+                                $(form).find('span.'+prefix+'_error').text('Campo Obrigatório'); //Preenche o campo span de erro com o erro retornado pelo json
                             });
                         }else{
                             $(form)[0].reset();
@@ -124,7 +123,7 @@
                     //Fim da validação de campos
                     }
                 });
-            })
+            });
            
             //Listar todos os pacientes
 
@@ -136,45 +135,76 @@
                 "aLengthMenu":[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
                 columns:[
                     //{data:'id', name:'id'}, //Traz o id do banco de dados
-                    {data:'DT_RowIndex', name:'DT_RowIndex'},
+                    {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
                     {data:'nome_paciente', name:'nome_paciente'},
-                    {data:'data_paciente', name:'data_paciente'},
-                    {data:'cpf_paciente', name:'cpf_paciente'},
-                    {data:'whatsapp_paciente', name:'whatsapp_paciente'},
-                    {data:'imagem_paciente', name:'imagem_paciente'},
-                    {data:'actions', name:'actions'},
+                    // {data:'data_paciente', name:'data_paciente'},
+                    // {data:'cpf_paciente', name:'cpf_paciente'},
+                    // {data:'whatsapp_paciente', name:'whatsapp_paciente'},
+                    {data:'imagem_paciente', name:'imagem_paciente', orderable:false, searchable:false},
+                    {data:'actions', name:'actions', orderable:false, searchable:false},
                 ]
             });
-            
-            //Script btn edit
-           
-        });//Final $(function
-        function editarPaciente(id){
-                //console.log(id);
-                var paciente_id = id;
-                //console.log(paciente_id);
-                let url_edit = "{{ route('paciente.detalhes', ':id') }}";
-                url_edit = url_edit.replace(':id', id);
-                $.ajax({
-                    url: url_edit,
-                    method:'GET',
+
+            //Script botão para abrir o modal de edição
+            function editarPaciente(id){
+                    let paciente_id = id;
+                    let form = this;
+                    let url_edit = "{{ route('paciente.detalhes', ':id') }}";
+
+                    url_edit = url_edit.replace(':id', id);
+                    //view editar paciente
+                    $.ajax({
+                        url: url_edit,
+                        method:'GET',
+                        dataType:'json',
+                        contentType:false,
+                        success:function(details){
+                            $('.editPacientes').find('input[name="pacienteid"]').val(details.id);
+                            $('.editPacientes').find('input[name="nome_paciente"]').val(details.nome_paciente);
+                            $('.editPacientes').find('input[name="data_paciente"]').val(details.data_paciente);
+                            $('.editPacientes').find('input[name="cpf_paciente"]').val(details.cpf_paciente);
+                            $('.editPacientes').find('input[name="whatsapp_paciente"]').val(details.whatsapp_paciente);
+                            $('.editPacientes').find('input[name="imagem_paciente"]').val(details.imagem_paciente);
+                            $('.editPacientes').modal('show');
+                        },
+                        error:function(details){
+                            console.log(details);
+                        },
+                });
+            }      
+
+            //Botão de atualizar paciente
+            $('#att-paciente').on('submit',function(e){
+                e.preventDefault();
+                var form = this;
+                $.ajax({                    
+                    url:$(form).attr('action'),                    
+                    method:$(form).attr('method'),
+                    data:new FormData(form),
+                    processData:false,
                     dataType:'json',
                     contentType:false,
-                    success:function(details){
-                        console.log(details);
-                        $('.editPacientes').find('input[name="pacienteid"]').val(details.nome_paciente);
-                        $('.editPacientes').find('input[name="nome_paciente"]').val(details.nome_paciente);
-                        $('.editPacientes').find('input[name="data_paciente"]').val(details.data_paciente);
-                        $('.editPacientes').find('input[name="cpf_paciente"]').val(details.cpf_paciente);
-                        $('.editPacientes').find('input[name="whatsapp_paciente"]').val(details.whatsapp_paciente);
-                        $('.editPacientes').find('input[name="imagem_paciente"]').val(details.imagem_paciente);
-                        $('.editPacientes').modal('show');
+                    beforeSend:function(){
+                        $(form).find('span.error-text').text('');//Localiza o campos span antes do formulário ser enviado
                     },
-                    error:function(details){
-                        console.log(details);
+                    success:function(data){
+                        if(data.code == 0){
+                            $.each(data.error, function(prefix){
+                                $(form).find('span.'+prefix+'_error').text('Campo Obrigatório'); //Preenche o campo span de erro com o erro retornado pelo json
+                            });
+                        }
+                        if(data.code == 1){
+                            $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
+                            $('.editPaciente').modal('hide');                       
+                            toastr.success(data.msg);
+                        }
                     },
+                    error:function(data){
+                        console.log(data);
+                    },
+                });
             });
-            }
+
     </script>
 </body>
 </html>
