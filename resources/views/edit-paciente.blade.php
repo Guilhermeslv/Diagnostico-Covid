@@ -13,27 +13,27 @@
                 <input type="hidden" name="pacienteid">                
                 <div class="form-group">
                     <label for="">Nome do Paciente</label>
-                    <input type="text" class="form-control" name="nome_paciente" placeholder="Digite o nome do paciente">
+                    <input type="text" class="form-control" name="nome_paciente"placeholder="Digite o nome do paciente">
                     <span class="text-danger error-text nome_paciente_error"></span>
                 </div>
                 <div class="form-group">    
                     <label for="">Data de nascimento</label>
-                    <input type="text" class="form-control" name="data_paciente" placeholder="Digite a data de nascimento do paciente">
+                    <input type="date" class="form-control" name="data_paciente"placeholder="Digite a data de nascimento do paciente">
                     <span class="text-danger error-text data_paciente_error"></span>
                   </div>
                 <div class="form-group">    
                     <label for="">CPF do Paciente</label>
-                    <input type="text" class="form-control" name="cpf_paciente" placeholder="Digite o CPF do paciente">
+                    <input type="text" class="form-control cpf_paciente" name="cpf_paciente"placeholder="Digite o CPF do paciente">
                     <span class="text-danger error-text cpf_paciente_error"></span>
                   </div>
                 <div class="form-group">    
                     <label for="">Whatsapp</label>
-                    <input type="text" class="form-control" name="whatsapp_paciente" placeholder="Digite o whatsapp do paciente">
+                    <input type="text" class="form-control whatsapp_paciente" name="whatsapp_paciente"placeholder="Digite o whatsapp do paciente">
                     <span class="text-danger error-text whatsapp_paciente_error"></span>
                   </div>
                 <div class="form-group">    
                     <label for="">Imagem</label>
-                    <input type="text" class="form-control" name="imagem_paciente" placeholder="Insira uma imagem do paciente">
+                    <input type="text" class="form-control" name="imagem_paciente"placeholder="Insira uma imagem do paciente">
                     <span class="text-danger error-text imagem_paciente_error"></span>
                   </div>            
                   

@@ -20,25 +20,18 @@ class PacientesController extends Controller
         //validação de campos do laravel que retorna um json para ser tratado pelo javascript
         $validator = \Validator::make($request->all(),[
             'nome_paciente'=>'required',
-            'data_paciente'=>'required',
-            'cpf_paciente'=>'required',
+            'data_paciente'=>'required|before_or_equal:today',
+            'cpf_paciente'=>'required|cpf',
             'whatsapp_paciente'=>'required',
             'imagem_paciente'=>'required',     
         ]);
-
         if(!$validator->passes()){
             return response()->json(['code'=>0,'error'=>$validator->errors()->toArray()]);// Json retornado para o Javascript
         }else{
-            //Inicio do cadastro pós validação
-            $paciente = new Paciente();
-            $paciente->nome_paciente = $request->nome_paciente;
-            $paciente->data_paciente = $request->data_paciente;
-            $paciente->cpf_paciente = $request->cpf_paciente;
-            $paciente->whatsapp_paciente = $request->whatsapp_paciente;
-            $paciente->imagem_paciente = $request->imagem_paciente;
-            $query = $paciente->save();
-
-            if(!$query){
+            //dd($request->all());
+           $paciente = Paciente::create($request->all());
+           
+            if(!$paciente){
                 return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
             }else{
                 return response()->json(['code'=>1,'msg'=>'Novo paciente cadastrado!']);
@@ -81,23 +74,17 @@ class PacientesController extends Controller
         $validator = \Validator::make($request->all(),[
             'nome_paciente'=>'required',
             'data_paciente'=>'required',
-            'cpf_paciente'=>'required',
+            'cpf_paciente'=>'required|cpf',
             'whatsapp_paciente'=>'required',
             'imagem_paciente'=>'required',     
         ]);
-
         if(!$validator->passes()){
             return response()->json(['code'=>0,'error'=>$validator->errors()->toArray()]);// Json retornado para o Javascript
         }else{
             $pacienteAtt = Paciente::find($paciente_id);
-            $pacienteAtt->nome_paciente = $request->nome_paciente;
-            $pacienteAtt->data_paciente = $request->data_paciente;
-            $pacienteAtt->cpf_paciente = $request->cpf_paciente;
-            $pacienteAtt->whatsapp_paciente = $request->whatsapp_paciente;
-            $pacienteAtt->imagem_paciente = $request->imagem_paciente;
-            $query = $pacienteAtt->save();
+            $pacienteAtt->update($request->all());
 
-            if(!$query){
+            if(!$pacienteAtt){
                 return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
             }else{
                 return response()->json(['code'=>1,'msg'=>'Dados do paciente atualizados!']);

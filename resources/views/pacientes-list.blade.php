@@ -38,7 +38,7 @@
                 <div class="card">
                     <div class="card-header">Cadastro de Pacientes</div>
                     <div class="card-body">
-                        <form action="{{ route('pacientes.cad') }}" method="post" id="pacientes-cad-form">
+                        <form action="{{ route('pacientes.cad') }}" method="post" id="pacientes-cad-form" autocomplete="off">
                             @csrf
                             <div class="form-group">
                                 <label for="">Nome do Paciente</label>
@@ -47,17 +47,17 @@
                             </div>
                             <div class="form-group">    
                                 <label for="">Data de nascimento</label>
-                                <input type="text" class="form-control" name="data_paciente" placeholder="Digite a data de nascimento do paciente">
+                                <input type="date" class="form-control" name="data_paciente" placeholder="Digite a data de nascimento do paciente">
                                 <span class="text-danger error-text data_paciente_error"></span>
                             </div>
                             <div class="form-group">    
                                 <label for="">CPF do Paciente</label>
-                                <input type="text" class="form-control" name="cpf_paciente" placeholder="Digite o CPF do paciente">
+                                <input type="text" class="form-control cpf_paciente" name="cpf_paciente" placeholder="Digite o CPF do paciente">
                                 <span class="text-danger error-text cpf_paciente_error"></span>
                             </div>
                             <div class="form-group">    
                                 <label for="">Whatsapp</label>
-                                <input type="text" class="form-control" name="whatsapp_paciente" placeholder="Digite o whatsapp do paciente">
+                                <input type="text" class="form-control whatsapp_paciente" name="whatsapp_paciente" placeholder="Digite o whatsapp do paciente">
                                 <span class="text-danger error-text whatsapp_paciente_error"></span>
                             </div>
                             <div class="form-group">    
@@ -81,6 +81,13 @@
     <script src="{{ asset('datatable/js/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('sweetalert2/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('toastr/toastr.min.js') }}"></script>
+    <script src="{{ asset('jquery-mask/jquery.mask.min.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.cpf_paciente').mask('000.000.000-00', {reverse:true, placeholder:'___.___.___-__'});
+            $('.whatsapp_paciente').mask('(00) 00000-0000', {placeholder:'(__) _____-____'});
+        });
+    </script>
     <script>
 
         toastr.options.preventDuplicates = true;
@@ -111,8 +118,11 @@
                     },
                     success:function(data){
                         if(data.code == 0){//Validação baseada no código de erro retornado pelo json do pacientesCad()
+                            // if(data.error['cpf_paciente']=="O campo cpf paciente não é um CPF válido."){
+                            //     $(form).find('span.cpf_paciente_error').text('Insira um CPF válido');
+                            // }
                             $.each(data.error, function(prefix, val){ //Para cada campo vazio a função mostra o span de erro
-                                $(form).find('span.'+prefix+'_error').text('Campo Obrigatório'); //Preenche o campo span de erro com o erro retornado pelo json
+                                $(form).find('span.'+prefix+'_error').text(val); //Preenche o campo span de erro com o erro retornado pelo json                            
                             });
                         }else{
                             $(form)[0].reset();
@@ -188,8 +198,8 @@
                     },
                     success:function(data){
                         if(data.code == 0){
-                            $.each(data.error, function(prefix){
-                                $(form).find('span.'+prefix+'_error').text('Campo Obrigatório'); //Preenche o campo span de erro com o erro retornado pelo json
+                            $.each(data.error, function(prefix, val){
+                                $(form).find('span.'+prefix+'_error').text(val); //Preenche o campo span de erro com o erro retornado pelo json
                             });
                         }
                         if(data.code == 1){
