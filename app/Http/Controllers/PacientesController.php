@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\PacienteRequest;
 use App\Models\Paciente;
 use DataTables;
 
@@ -16,26 +17,32 @@ class PacientesController extends Controller
 
     //Add novo paciente
 
-    public function pacientesCad(Request $request){ //$request = new Request;
-        //validação de campos do laravel que retorna um json para ser tratado pelo javascript
+    public function pacientesCad(Request $request){
+        $dataHoje = strtotime(date('Y-m-d')); //Pega a data do dia atual e transforma para time
+        $dataValidator = strtotime('-1 year', $dataHoje); //Subtrai 1 ano da data atual
         $validator = \Validator::make($request->all(),[
             'nome_paciente'=>'required',
-            'data_paciente'=>'required|before_or_equal:today',
+            'data_paciente'=>'required|before_or_equal:'.date('Y-m-d', $dataValidator),
             'cpf_paciente'=>'required|cpf',
-            'whatsapp_paciente'=>'required',
-            'imagem_paciente'=>'required',     
+            'whatsapp_paciente'=>'required', 
+            'imagem_paciente'=>'required|image|mimes:jpg,png,jpeg|max:5120'    
         ]);
         if(!$validator->passes()){
             return response()->json(['code'=>0,'error'=>$validator->errors()->toArray()]);// Json retornado para o Javascript
         }else{
-            //dd($request->all());
-           $paciente = Paciente::create($request->all());
-           
-            if(!$paciente){
-                return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
-            }else{
-                return response()->json(['code'=>1,'msg'=>'Novo paciente cadastrado!']);
-            }
+           $paciente = new Paciente($request->all());
+           if ($imagem = $request->imagem_paciente) {
+            $nomeImagem = $request['imagem_paciente']->getClientOriginalName() . strtotime('now') . "." . $imagem->getClientOriginalExtension();
+            $imagem->move('img/Pacientes', $nomeImagem);
+            $paciente['imagem_paciente'] = $nomeImagem;
+            } 
+
+           $paciente->save();
+           if(!$paciente){
+               return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+           }else{
+               return response()->json(['code'=>1,'msg'=>'Novo paciente cadastrado!']);
+           }
 
         }
 
@@ -45,7 +52,13 @@ class PacientesController extends Controller
     public function getPacientesList(){
         $pacientes = Paciente::all();
         return DataTables::of($pacientes)
-                            ->addIndexColumn() //substitui o id para não bagunçar a contagem na tabela
+                            // ->addIndexColumn() //substitui o id para não bagunçar a contagem na tabela                                                            
+                            // $dataHoje = strtotime(date('Y-m-d'));
+                            // $nascimento = strtotime($dataPaciente->data_paciente);
+                            // $idade = date_diff($dataHoje, $nascimento);
+                            ->addColumn('idade',function($dataPaciente){
+                                return '<h3>'.$dataPaciente->data_paciente.'</h3>';
+                            })
                             ->addColumn('actions', function($row){
                                   return '<div class="btn-group">
                                                 <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Atualizar</button>
@@ -57,35 +70,40 @@ class PacientesController extends Controller
 
     }
 
-    //Fim listar
-
-    public function pacienteDetalhes($id){
+    //Exibir detalhes do paciente
+    public function pacienteDetalhes(Request $request, $id){
         $pacienteDetalhes = Paciente::find($id);
         return response()->json($pacienteDetalhes);
     }
 
     public function pacienteAtt(Request $request){
-        //$pacienteAtt = new Paciente();
-        //$pacienteAtt->find($request->pacienteid)->update($request->all());
-        //return response()->json(['code'=>1,'msg'=>'Dados do paciente foram atualizados!']);
-        
         $paciente_id = $request->pacienteid; //Requisita o id do campo hidden do modal
-
+        $dataHoje = strtotime(date('Y-m-d')); //Pega a data do dia atual e transforma para time
+        $dataValidator = strtotime('-1 year', $dataHoje); //Subtrai 1 ano da data atual
         $validator = \Validator::make($request->all(),[
             'nome_paciente'=>'required',
-            'data_paciente'=>'required',
+            'data_paciente'=>'required|before_or_equal:'.date('Y-m-d', $dataValidator),
             'cpf_paciente'=>'required|cpf',
             'whatsapp_paciente'=>'required',
-            'imagem_paciente'=>'required',     
+            'imagem_paciente'=>'image|mimes:jpg,png,jpeg|max:5120'   
         ]);
         if(!$validator->passes()){
             return response()->json(['code'=>0,'error'=>$validator->errors()->toArray()]);// Json retornado para o Javascript
         }else{
-            $pacienteAtt = Paciente::find($paciente_id);
-            $pacienteAtt->update($request->all());
-
+            $requestComImagem = $request->all();                       
+            if ($imagem = $request->imagem_paciente) {
+            $nomeImagem = $request['imagem_paciente']->getClientOriginalName() . strtotime('now') . "." . $imagem->getClientOriginalExtension();
+            $imagem->move('img/Pacientes', $nomeImagem);
+            $requestComImagem['imagem_paciente'] = $nomeImagem;
+            }
+            $pacienteAtt = Paciente::find($paciente_id)->update($requestComImagem);    
+            
+                
+            
             if(!$pacienteAtt){
-                return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+                //Passa o valor da imagem que já está no banco para o $requestComImg caso ele não contenha
+                
+                    return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
             }else{
                 return response()->json(['code'=>1,'msg'=>'Dados do paciente atualizados!']);
             }

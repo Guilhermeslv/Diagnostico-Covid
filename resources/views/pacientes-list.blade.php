@@ -21,12 +21,13 @@
                     <div class="card-body">
                         <table class="table table-hover table-condensed" id="pacientes_table">
                             <thead>
-                                <th>#</th>
+                                <th>Imagem</th>
                                 <th>Nome</th>
+                                <th>Idade</th>
                                 {{-- <th>Data</th>
                                 <th>CPF</th>
-                                <th>Whatsapp</th> --}}
-                                <th>Imagem</th>
+                                <th>Whatsapp</th>
+                                <th>Imagem</th> --}}
                                 <th>Ações</th>
                             </thead>
                             <tbody></tbody>
@@ -38,7 +39,7 @@
                 <div class="card">
                     <div class="card-header">Cadastro de Pacientes</div>
                     <div class="card-body">
-                        <form action="{{ route('pacientes.cad') }}" method="post" id="pacientes-cad-form" autocomplete="off">
+                        <form action="{{ route('pacientes.cad') }}" method="post" id="pacientes-cad-form" enctype="multipart/form-data" autocomplete="off">
                             @csrf
                             <div class="form-group">
                                 <label for="">Nome do Paciente</label>
@@ -62,7 +63,7 @@
                             </div>
                             <div class="form-group">    
                                 <label for="">Imagem</label>
-                                <input type="text" class="form-control" name="imagem_paciente" placeholder="Insira uma imagem do paciente">
+                                <input type="file" class="form-control" name="imagem_paciente">
                                 <span class="text-danger error-text imagem_paciente_error"></span>
                             </div>
                             <div class="form-group">
@@ -144,13 +145,19 @@
                 "aLengthMenu":[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
                 columns:[
                     // {data:'id', name:'id'}, //Traz o id do banco de dados
-                    {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
+                    // {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
+                    {data:'imagem_paciente', name:'imagem_paciente', orderable:false, searchable:false,
+                            "render": function (data) {
+                                return '<img src="img/Pacientes/' + data + '" alt="' + data + '"height="50" width="50" style="img{border-radius:50%;}"/>';
+                            }
+                    },
                     {data:'nome_paciente', name:'nome_paciente'},
+                    {data:'data_paciente', name:'data_paciente'},
+                    {data:'actions', name:'actions', orderable:false, searchable:false},
                     // {data:'data_paciente', name:'data_paciente'},
                     // {data:'cpf_paciente', name:'cpf_paciente'},
-                    // {data:'whatsapp_paciente', name:'whatsapp_paciente'},
-                    {data:'imagem_paciente', name:'imagem_paciente', orderable:false, searchable:false},
-                    {data:'actions', name:'actions', orderable:false, searchable:false},
+                    // {data:'whatsapp_paciente', name:'whatsapp_paciente'},                    
+                    
                 ]
             });
 
@@ -168,12 +175,13 @@
                         dataType:'json',
                         contentType:false,
                         success:function(details){
+
                             $('.editPacientes').find('input[name="pacienteid"]').val(details.id);
                             $('.editPacientes').find('input[name="nome_paciente"]').val(details.nome_paciente);
                             $('.editPacientes').find('input[name="data_paciente"]').val(details.data_paciente);
                             $('.editPacientes').find('input[name="cpf_paciente"]').val(details.cpf_paciente);
                             $('.editPacientes').find('input[name="whatsapp_paciente"]').val(details.whatsapp_paciente);
-                            $('.editPacientes').find('input[name="imagem_paciente"]').val(details.imagem_paciente);
+                            $('.imagem_paciente').attr('src', 'public/Pacientes/'+details.imagem_paciente);
                             $('.editPacientes').modal('show');
                         },
                         error:function(details){
@@ -193,9 +201,6 @@
                     processData:false,
                     dataType:'json',
                     contentType:false,
-                    beforeSend:function(){
-                        $(form).find('span.error-text').text('');//Localiza o campos span antes do formulário ser enviado
-                    },
                     success:function(data){
                         if(data.code == 0){
                             $.each(data.error, function(prefix, val){
@@ -204,7 +209,7 @@
                         }
                         if(data.code == 1){
                             $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
-                            $('.editPaciente').modal('hide');                       
+                            $('.editPaciente').modal('hide');                    
                             toastr.success(data.msg);
                         }
                     },
