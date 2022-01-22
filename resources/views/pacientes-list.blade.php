@@ -98,7 +98,20 @@
                 'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content'),
             }
         });
+            //Calcular idade
+            function calcularIdade (nascimento) {
+                nascimento = new Date(nascimento);
+                var hoje = new Date();
 
+                var anos = (hoje.getFullYear() - nascimento.getFullYear());
+
+                if (hoje.getMonth() < nascimento.getMonth() || 
+                    hoje.getMonth() == nascimento.getMonth() && hoje.getDate() < nascimento.getDate()) {
+                    anos--;
+                }
+
+                return anos;
+            }
             //Adicionar novo paciente
             $("#pacientes-cad-form").on("submit", function(e){
                 e.preventDefault(); //Previne o comportamento padrão do botão submit de enviar o formulário
@@ -141,7 +154,7 @@
                             }
                     },
                     {data:'nome_paciente', name:'nome_paciente'},
-                    {data:'data_paciente', name:'data_paciente'},
+                    {data:'data_paciente', name:'data_paciente', "render": function(data){return calcularIdade(data);}},
                     {data:'actions', name:'actions', orderable:false, searchable:false},
                     // {data:'data_paciente', name:'data_paciente'},
                     // {data:'cpf_paciente', name:'cpf_paciente'},

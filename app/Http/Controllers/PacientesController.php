@@ -33,16 +33,13 @@ class PacientesController extends Controller
     public function getPacientesList(){
         $pacientes = Paciente::all();
         return DataTables::of($pacientes)
-                            ->addColumn('idade',function($dataPaciente){
-                                return $dataPaciente->data_paciente;
-                            })
                             ->addColumn('actions', function($row){
                                   return '<div class="btn-group">
                                                 <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Atualizar</button>
                                                 <button class="btn btn-sm btn-danger" data-id="'.$row->id.'" id="deletePacienteBtn">Apagar</button>
                                           </div>';
                               })
-                            ->rawColumns(['actions'])
+                            ->rawColumns(['actions','idade'])
                             ->make(true);
 
     }
