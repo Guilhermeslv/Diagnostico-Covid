@@ -42,7 +42,7 @@
                         <form action="{{ route('pacientes.cad') }}" method="post" id="pacientes-cad-form" enctype="multipart/form-data" autocomplete="off">
                             @csrf
                             <div class="form-group">
-                                <label for="">Nome do Paciente</label>
+                                <label for="" >Nome do Paciente</label>
                                 <input type="text" class="form-control" name="nome_paciente" placeholder="Digite o nome do paciente">
                                 <span class="text-danger error-text nome_paciente_error"></span>
                             </div>
@@ -110,28 +110,17 @@
                     processData:false,
                     dataType:'json',
                     contentType:false,
-                    
-                    //Inicio da Validação de campos
-
-                    beforeSend:function(){
-                        $(form).find('span.error-text').text('');
-                        //Localiza o campos span antes do formulário ser enviado
-                    },
                     success:function(data){
-                        if(data.code == 0){//Validação baseada no código de erro retornado pelo json do pacientesCad()
-                            // if(data.error['cpf_paciente']=="O campo cpf paciente não é um CPF válido."){
-                            //     $(form).find('span.cpf_paciente_error').text('Insira um CPF válido');
-                            // }
-                            $.each(data.error, function(prefix, val){ //Para cada campo vazio a função mostra o span de erro
+                            $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
+                            $('#pacientes-cad-form')[0].reset();
+                            toastr.success(data.msg); //Notificação de sucesso
+                    },
+                    error:function(data){
+                        if(data.status == 422){//Validação baseada no status da requisição 422 Unprocessable content                 
+                            $.each(data.responseJSON.errors, function(prefix, val){ //Para cada campo vazio a função mostra o span de erro
                                 $(form).find('span.'+prefix+'_error').text(val); //Preenche o campo span de erro com o erro retornado pelo json                            
                             });
-                        }else{
-                            $(form)[0].reset();
-                            //alert('data.msg'); 
-                            $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
-                            toastr.success(data.msg); //Notificação de sucesso
                         }
-                    //Fim da validação de campos
                     }
                 });
             });
@@ -202,27 +191,24 @@
                     dataType:'json',
                     contentType:false,
                     success:function(data){
-                        if(data.code == 0){
-                            $.each(data.error, function(prefix, val){
-                                $(form).find('span.'+prefix+'_error').text(val); //Preenche o campo span de erro com o erro retornado pelo json
-                            });
-                        }
-                        if(data.code == 1){
                             $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
-                            $('.editPaciente').modal('hide');                    
-                            toastr.success(data.msg);
-                        }
+                            $('.editPaciente').modal('hide');
+                            $('#pacientes-cad-form')[0].reset(); 
+                            toastr.success(data.msg); //Notificação de sucesso
                     },
                     error:function(data){
-                        console.log(data);
-                    },
+                        if(data.status == 422){//Validação baseada no status da requisição 422 Unprocessable content                 
+                            $.each(data.responseJSON.errors, function(prefix, val){ //Para cada campo vazio a função mostra o span de erro
+                                $(form).find('span.'+prefix+'_error').text(val); //Preenche o campo span de erro com o erro retornado pelo json                            
+                            });
+                        }
+                    }
                 });
             });
 
             //Botão de deletar
             $(document).on('click', '#deletePacienteBtn', function () {
                 var paciente_id = $(this).data("id");
-                console.log(paciente_id);
                 var urlDelete = '{{ route("paciente.delete",":id") }}';
                 urlDelete = urlDelete.replace(':id', paciente_id);
                 // console.log(urlDelete);
