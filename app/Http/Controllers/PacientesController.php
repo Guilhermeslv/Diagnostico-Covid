@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\PacientesRequest;
 use App\Models\Paciente;
+use App\Models\Sintoma;
 use DataTables;
 
 class PacientesController extends Controller
@@ -15,8 +16,29 @@ class PacientesController extends Controller
         return view('pacientes-list');
     }
 
+    public function cadAtendimento(Request $request, $id){
+        $paciente = Paciente::find($id);
+        $sintomas = $request->all();
+        
+        if($paciente->sintoma){
+            //$sintomaOBJ = Sintoma::where('paciente_id', $id);
+            $sintomaDoPaciente = $paciente->sintoma;
+            $sintomaDoPaciente->sintomas = $sintomas['sintoma'];
+            $sintomaDoPaciente->update();
+            return response()->json(['msg'=>'Atendimento cadastrado!']);
+        }else{
+            $sintomaOBJ = new Sintoma($sintomas['sintoma']);
+            $sintomaOBJ->sintomas = $request->sintoma;
+            $paciente->sintoma()->save($sintomaOBJ);
+            return response()->json(['msg'=>'Atendimento cadastrado!']);
+        }
+        
+    }
+    public function fichaPaciente(Request $request, $id){
+        $pacienteSintomas = Paciente::with('sintoma')->find($id);
+        return response()->json($pacienteSintomas);
+    }
     //Add novo paciente
-
     public function pacientesCad(PacientesRequest $request){
             $paciente = Paciente::make($request->all());
             if ($imagem = $request->imagem_paciente) {
@@ -33,13 +55,19 @@ class PacientesController extends Controller
     public function getPacientesList(){
         $pacientes = Paciente::all();
         return DataTables::of($pacientes)
+                            ->addColumn('ficha', function($row){
+                                return '<div class="btn-group">
+                                            <button class="btn btn-sm btn-warning" data-id="'.$row['id'].'" id="fichaBTN">Ver ficha</button>
+                                        </div>';
+                            })
                             ->addColumn('actions', function($row){
                                   return '<div class="btn-group">
                                                 <button class="btn btn-sm btn-primary" id="editPacienteBtn" onClick="editarPaciente('.$row['id'].')">Atualizar</button>
                                                 <button class="btn btn-sm btn-danger" data-id="'.$row->id.'" id="deletePacienteBtn">Apagar</button>
+                                                <button class="btn btn-sm btn-success" data-id="'.$row['id'].'" id="atendimento">Atendimento</button>
                                           </div>';
                               })
-                            ->rawColumns(['actions','idade'])
+                            ->rawColumns(['actions', 'ficha'])
                             ->make(true);
 
     }
@@ -70,6 +98,9 @@ class PacientesController extends Controller
     public function pacienteDelete($id){
         $query = Paciente::find($id);
         $caminhoImg ='img/pacientes/'.$query->imagem_paciente;
+        if(isset($query->sintoma)){
+            $query->sintoma->delete();
+        }
         unlink($caminhoImg);
         $query->delete();
         if(!$query){

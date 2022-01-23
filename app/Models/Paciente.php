@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\Sintoma;
 
 class Paciente extends Model
 {
@@ -12,6 +13,10 @@ class Paciente extends Model
 
     protected $fillable = ['nome_paciente','data_paciente','cpf_paciente','whatsapp_paciente','imagem_paciente'];
     
+    public function sintoma(){
+        return $this->hasOne(Sintoma::class);
+    }
+
     // public function setDataPacienteAttribute($value){        
     //     $this->attributes['data_paciente'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
     // }

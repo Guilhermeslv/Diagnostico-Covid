@@ -24,6 +24,7 @@
                                 <th>Imagem</th>
                                 <th>Nome</th>
                                 <th>Idade</th>
+                                <th>Ficha</th>
                                 {{-- <th>Data</th>
                                 <th>CPF</th>
                                 <th>Whatsapp</th>
@@ -74,7 +75,9 @@
             </div>
         </div>
     </div>
-    @include('edit-paciente')
+    @include('edit-paciente');
+    @include('atendimento-paciente')
+    @include('ficha')
     <script src="{{ asset('jquery/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.bundle.min.js') }}"></script>
@@ -98,6 +101,108 @@
                 'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content'),
             }
         });
+            //Calcular Status do paciente
+            function calcularStatus(qtdSintomas){
+                var sintomas = qtdSintomas;
+                var totalSintomas = 14;
+                var porcentagem = (sintomas*100)/totalSintomas;
+
+                if (porcentagem<40){ return('SINTOMAS INSUFICIENTES'); } 
+                else if (porcentagem>=40 && porcentagem<60){ return('POTENCIAL INFECTADO'); }
+                else if (porcentagem>=60){ return('POSSÍVEL INFECTADO'); } 
+                else{ return('Houve algum erro!'); } 
+            }
+            //Modal de atendimento
+            $(document).on('click','#atendimento',function(e){
+                e.preventDefault();
+                var paciente_id = $(this).data("id");
+                Swal.fire({
+                    title: 'Você tem certeza?',
+                    text: "Essa ação irá iniciar um novo atendimento",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Não',
+                    confirmButtonText: 'Sim!'
+                    }).then((result) => {
+                    if (result.isConfirmed) {                        
+                        $('.atendimentoModal').modal('show');
+                        $('#atendimento-form').on('submit',function(e){
+                            e.preventDefault();
+                            var urlCadAtendimento = '{{ route("cad.atendimento",":id") }}';
+                            urlCadAtendimento = urlCadAtendimento.replace(':id', paciente_id);
+                            var form = this;
+                            $('#atendimento-form').find('input[name="pacienteid"]').val(paciente_id);
+                            $.ajax({                    
+                                url:urlCadAtendimento,                    
+                                method:$(form).attr('method'),
+                                data:new FormData(form),
+                                processData:false,
+                                dataType:'json',
+                                contentType:false,
+                                success:function(data){
+
+                                        $('.atendimentoModal').modal('hide');
+                                        $("form#atendimento-form")[0].reset();
+                                        //$('input[name="sintoma[]"]').reset();
+                                        toastr.success(data.msg);
+                                    
+                                },
+                                error:function(data){
+                                    console.log(data);
+                                }
+                            });
+                            //Fim AJAX
+                        });
+                    }
+                    });
+
+            });
+
+            //Modal de ficha
+            $(document).on('click','#fichaBTN',function(e){
+                e.preventDefault();
+                var paciente_id = $(this).data("id");
+                let url_edit = "{{ route('ficha.atendimento', ':id') }}";
+                url_edit = url_edit.replace(':id', paciente_id);
+                $.ajax({
+                    url: url_edit,
+                    method:'GET',
+                    dataType:'json',
+                    contentType:false,
+                    success:function(data){
+                        if(data.sintoma==null){
+                            toastr.error('Você precisa iniciar um atendimento para ver a ficha do paciente!');
+                        }else{
+                            var arraySintomas = data.sintoma['sintomas'];
+                            var qtdSintomas = arraySintomas.length;
+                            form = $('.ficha');
+                            // Percorre o array para exibir na lista
+                            contador = 0;
+                            $(form).find('.statusDoPaciente').text(calcularStatus(qtdSintomas));
+                            $.each(arraySintomas, function(prefix, val){ 
+                                str = '<li class="list-group-item">'+arraySintomas[contador]+'</li>';
+                                html = $.parseHTML(str);
+                                $(form).find('.lista-sintomas').append(html);
+                                contador++;
+                            });
+                            contador=0;
+
+                            //Abre o modal
+                            $('.ficha').modal('show');
+                            $(".ficha").on("hidden.bs.modal", function () {//Captura o evento de fechar o modal
+                                $("ul").empty();//Define a Ul como vazia
+                                $(".statusDoPaciente").empty();//Define o Status como vazio
+                            });                            
+                            
+                        }
+                    },
+                    error:function(data){
+                        console.log(details);
+                    },
+                });                
+            });
+            
             //Calcular idade
             function calcularIdade (nascimento) {
                 nascimento = new Date(nascimento);
@@ -112,10 +217,11 @@
 
                 return anos;
             }
+
             //Adicionar novo paciente
             $("#pacientes-cad-form").on("submit", function(e){
                 e.preventDefault(); //Previne o comportamento padrão do botão submit de enviar o formulário
-                var form = this;                
+                var form = this;            
                 $.ajax({
                     url:$(form).attr('action'),
                     method:$(form).attr('method'),
@@ -143,8 +249,8 @@
                 processing:true,
                 info:true,
                 ajax:"{{ route('get.pacientes.list') }}",
-                "pageLenght":5,
-                "aLengthMenu":[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
+                pageLenght:5,
+                aLengthMenu:[[5,10,25,50,-1],[5,10,25,50,"All"]], //Configura os padrões de exibição da tabela
                 columns:[
                     // {data:'id', name:'id'}, //Traz o id do banco de dados
                     // {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
@@ -155,10 +261,8 @@
                     },
                     {data:'nome_paciente', name:'nome_paciente'},
                     {data:'data_paciente', name:'data_paciente', "render": function(data){return calcularIdade(data);}},
-                    {data:'actions', name:'actions', orderable:false, searchable:false},
-                    // {data:'data_paciente', name:'data_paciente'},
-                    // {data:'cpf_paciente', name:'cpf_paciente'},
-                    // {data:'whatsapp_paciente', name:'whatsapp_paciente'},                    
+                    {data:'ficha', name:'ficha'},//Preenchendo a coluna status... Resgatar do banco de dados
+                    {data:'actions', name:'actions', orderable:false, searchable:false},                 
                     
                 ]
             });
@@ -166,7 +270,6 @@
             //Script botão para abrir o modal de edição com as informações do paciente
             function editarPaciente(id){
                     var paciente_id = id;
-                    let form = this;
                     let url_edit = "{{ route('paciente.detalhes', ':id') }}";
 
                     url_edit = url_edit.replace(':id', id);
@@ -224,8 +327,7 @@
                 var paciente_id = $(this).data("id");
                 var urlDelete = '{{ route("paciente.delete",":id") }}';
                 urlDelete = urlDelete.replace(':id', paciente_id);
-                // console.log(urlDelete);
-                
+                console.log(urlDelete);
                 //Sweet Alert
                 Swal.fire({
                     title: 'Você tem certeza?',
@@ -233,6 +335,7 @@
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
+                    cancelButtonText: 'Não',
                     confirmButtonText: 'Sim, deletar!'
                     }).then((result) => {
                     if (result.isConfirmed) {
@@ -244,7 +347,6 @@
                             processData:false,
                             contentType:false,
                             success:function(data){
-                                //console.log(data);
                                 $('#pacientes_table').DataTable().ajax.reload(null, false); //Recarrega a tabela quando é realizado o cadastro
                                 toastr.success(data.msg);
                             },

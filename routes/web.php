@@ -23,3 +23,5 @@ Route::get('/getPacientesList',[PacientesController::class, 'getPacientesList'])
 Route::get('/pacienteDetalhes/{id}',[PacientesController::class, 'pacienteDetalhes'])->name('paciente.detalhes');
 Route::post('/pacienteatt',[PacientesController::class, 'pacienteAtt'])->name('paciente.att');
 Route::get('/pacienteDelete/{id}',[PacientesController::class, 'pacienteDelete'])->name('paciente.delete');
+Route::post('/cadAtendimento/{id}',[PacientesController::class, 'cadAtendimento'])->name('cad.atendimento');
+Route::get('/fichaPaciente/{id}',[PacientesController::class, 'fichaPaciente'])->name('ficha.atendimento');
