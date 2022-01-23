@@ -82,7 +82,7 @@ class PacientesController extends Controller
             $paciente_id = $request->pacienteid; //Requisita o id do campo hidden do modal
             if ($request->hasFile('imagem_paciente')){
                 $BdImg = Paciente::find($paciente_id);//Resgata o nome da imagem original no BD
-                $caminhoImg ='img/pacientes/'.$BdImg['imagem_paciente'];//Define o Path para imagem
+                $caminhoImg ='img/Pacientes/'.$BdImg['imagem_paciente'];//Define o Path para imagem
                 unlink($caminhoImg);//Exclui a imagem
             }
             $paciente = $request->validated(); 
@@ -97,7 +97,7 @@ class PacientesController extends Controller
 
     public function pacienteDelete($id){
         $query = Paciente::find($id);
-        $caminhoImg ='img/pacientes/'.$query->imagem_paciente;
+        $caminhoImg ='img/Pacientes/'.$query->imagem_paciente;
         if(isset($query->sintoma)){
             $query->sintoma->delete();
         }
