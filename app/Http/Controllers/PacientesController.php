@@ -19,24 +19,46 @@ class PacientesController extends Controller
     public function cadAtendimento(Request $request, $id){
         $paciente = Paciente::find($id);
         $sintomas = $request->all();
-        
-        if($paciente->sintoma){
-            //$sintomaOBJ = Sintoma::where('paciente_id', $id);
-            $sintomaDoPaciente = $paciente->sintoma;
-            $sintomaDoPaciente->sintomas = $sintomas['sintoma'];
-            $sintomaDoPaciente->update();
-            return response()->json(['msg'=>'Atendimento cadastrado!']);
+        if(isset($sintomas['sintoma'])){
+            if($paciente->sintoma){
+                //$sintomaOBJ = Sintoma::where('paciente_id', $id);
+                $sintomaDoPaciente = $paciente->sintoma;
+                $sintomaDoPaciente->sintomas = $sintomas['sintoma'];
+                $sintomaDoPaciente->update();
+                return response()->json(['msg'=>'Atendimento cadastrado!']);
+            }else{
+                $sintomaOBJ = new Sintoma($sintomas['sintoma']);
+                $sintomaOBJ->sintomas = $request->sintoma;
+                $paciente->sintoma()->save($sintomaOBJ);
+                return response()->json(['msg'=>'Atendimento cadastrado!']);
+            }
         }else{
-            $sintomaOBJ = new Sintoma($sintomas['sintoma']);
-            $sintomaOBJ->sintomas = $request->sintoma;
-            $paciente->sintoma()->save($sintomaOBJ);
-            return response()->json(['msg'=>'Atendimento cadastrado!']);
+            if($paciente->sintoma){
+                //$sintomaOBJ = Sintoma::where('paciente_id', $id);
+                $sintomaDoPaciente = $paciente->sintoma;
+                $sintomaDoPaciente->sintomas = null;
+                $sintomaDoPaciente->update();
+                return response()->json(['msg'=>'Atendimento cadastrado!']);
+            }else{
+                $sintomaOBJ = new Sintoma();
+                $sintomaOBJ->sintomas = null;
+                $paciente->sintoma()->save($sintomaOBJ);
+                return response()->json(['msg'=>'Atendimento cadastrado!']);
+            }
         }
+        
         
     }
     public function fichaPaciente(Request $request, $id){
-        $pacienteSintomas = Paciente::with('sintoma')->find($id);
-        return response()->json($pacienteSintomas);
+        $sintomas['sintoma'] = $request->all();
+        if(isset($sintomas['sintoma'])){
+            $pacienteSintomas = Paciente::with('sintoma')->find($id);
+            return response()->json($pacienteSintomas);
+        }else{
+            $pacienteSintomas = Paciente::find($id);
+            return response()->json($pacienteSintomas);
+        }
+        
     }
     //Add novo paciente
     public function pacientesCad(PacientesRequest $request){

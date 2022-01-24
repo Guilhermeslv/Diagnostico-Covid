@@ -171,29 +171,44 @@
                     dataType:'json',
                     contentType:false,
                     success:function(data){
+                        //Verifica se existe um atendimento em aberto
                         if(data.sintoma==null){
                             toastr.error('Você precisa iniciar um atendimento para ver a ficha do paciente!');
                         }else{
                             var arraySintomas = data.sintoma['sintomas'];
-                            var qtdSintomas = arraySintomas.length;
-                            form = $('.ficha');
-                            // Percorre o array para exibir na lista
-                            contador = 0;
-                            $(form).find('.statusDoPaciente').text(calcularStatus(qtdSintomas));
-                            $.each(arraySintomas, function(prefix, val){ 
-                                str = '<li class="list-group-item">'+arraySintomas[contador]+'</li>';
-                                html = $.parseHTML(str);
-                                $(form).find('.lista-sintomas').append(html);
-                                contador++;
-                            });
-                            contador=0;
+                            //Verifica se existem sintomas no atendimento
+                            if(arraySintomas == null){
+                                form = $('.ficha');
+                                $(form).find('.statusDoPaciente').text('O paciente está sem sintomas!');
+                                $('.ficha').modal('show');
+                                $(".ficha").on("hidden.bs.modal", function () {//Captura o evento de fechar o modal
+                                    $("ul").empty();//Define a Ul como vazia
+                                    $(".statusDoPaciente").empty();//Define o Status como vazio
+                                });
+                            }
+                            //Se houver sintomas no atendimento do paciente lista os dados
+                            else{
+                                var qtdSintomas = arraySintomas.length;
+                                form = $('.ficha');
+                                // Percorre o array para exibir na lista
+                                contador = 0;
+                                $(form).find('.statusDoPaciente').text(calcularStatus(qtdSintomas));
+                                $.each(arraySintomas, function(prefix, val){ 
+                                    str = '<li class="list-group-item">'+arraySintomas[contador]+'</li>';
+                                    html = $.parseHTML(str);
+                                    $(form).find('.lista-sintomas').append(html);
+                                    contador++;
+                                });
+                                contador=0;
 
-                            //Abre o modal
-                            $('.ficha').modal('show');
-                            $(".ficha").on("hidden.bs.modal", function () {//Captura o evento de fechar o modal
-                                $("ul").empty();//Define a Ul como vazia
-                                $(".statusDoPaciente").empty();//Define o Status como vazio
-                            });                            
+                                //Abre o modal
+                                $('.ficha').modal('show');
+                                $(".ficha").on("hidden.bs.modal", function () {//Captura o evento de fechar o modal
+                                    $("ul").empty();//Define a Ul como vazia
+                                    $(".statusDoPaciente").empty();//Define o Status como vazio
+                                });
+                            }
+                                                        
                             
                         }
                     },
