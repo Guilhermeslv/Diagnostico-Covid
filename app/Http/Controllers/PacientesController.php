@@ -67,7 +67,10 @@ class PacientesController extends Controller
                 $nomeImagem = $request['imagem_paciente']->getClientOriginalName() . strtotime('now') . "." . $imagem->getClientOriginalExtension();
                 $imagem->move('img/Pacientes', $nomeImagem);
                 $paciente['imagem_paciente'] = $nomeImagem;
-            } 
+            } else{
+                $nomeImagem = 'default.jpg';
+                $paciente['imagem_paciente'] = $nomeImagem;
+            }
 
            $paciente->save();
            return response()->json(['code'=>1,'msg'=>'Dados do paciente atualizados!']);
@@ -123,12 +126,22 @@ class PacientesController extends Controller
         if(isset($query->sintoma)){
             $query->sintoma->delete();
         }
-        unlink($caminhoImg);
-        $query->delete();
-        if(!$query){
-            return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+        if(!$query['imagem_paciente'] == 'default.jpg' ){
+            $caminhoImg ='img/Pacientes/'.$query->imagem_paciente;
+            unlink($caminhoImg);
+            $query->delete();
+            if(!$query){
+                return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+            }else{
+                return response()->json(['code'=>1,'msg'=>'Paciente deletado!']);
+            }
         }else{
-            return response()->json(['code'=>1,'msg'=>'Paciente deletado!']);
+            $query->delete();
+            if(!$query){
+                return response()->json(['code'=>0,'msg'=>'Aconteceu um erro!']);
+            }else{
+                return response()->json(['code'=>1,'msg'=>'Paciente deletado!']);
+            }
         }
     }
 }
